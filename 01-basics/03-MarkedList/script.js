@@ -1,4 +1,4 @@
-// import { createApp } from './vendor/vue.esm-browser.js';
+import {createApp} from './vendor/vue.esm-browser.js';
 
 // From https://jsonplaceholder.typicode.com/comments
 const emails = [
@@ -29,4 +29,31 @@ const emails = [
   'Isaias_Kuhic@jarrett.net',
 ];
 
-// Требуется создать Vue приложение
+export default createApp({
+  data() {
+    return {
+      emails: emails,
+      filter: ''
+    }
+  },
+  computed: {
+    filteredEmails() {
+      return emails.map(item => {
+        return {
+          text: item,
+          marked: item.indexOf(this.filter) > 0
+        }
+      });
+    }
+  },
+  template: `
+    <div class="container">
+    <div class="form-group">
+      <input v-model="filter" type="search"/>
+    </div>
+    <ul v-if="filteredEmails.length">
+      <li v-for="email in filteredEmails" :class="{marked: email.marked}">{{ email.text }}</li>
+    </ul>
+    </div>
+  `
+}).mount('#app');
