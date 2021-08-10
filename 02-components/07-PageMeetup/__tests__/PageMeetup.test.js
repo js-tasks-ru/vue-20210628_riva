@@ -1,12 +1,12 @@
 jest.mock(global.getSolutionPath('vendor/vue.esm-browser.js'), () => require('vue'));
+jest.mock('../meetupService');
 
 const { default: PageMeetupTest } = require(global.getSolutionPath('PageMeetup'));
 const meetupService = require(global.getSolutionPath('meetupService'));
 import { mount } from '@vue/test-utils';
+import { nextTick } from 'vue';
 import flushPromises from 'flush-promises';
 import meetups from './__fixtures__/meetups';
-
-jest.mock('../meetupService');
 
 describe('components/PageMeetup', () => {
   describe('PageMeetup', () => {
@@ -15,19 +15,17 @@ describe('components/PageMeetup', () => {
       jest.spyOn(meetupService, 'fetchMeetupById').mockResolvedValue(meetups[0]);
       const wrapper = mount(PageMeetupTest, { props: { meetupId }, global: { stubs: ['MeetupView'] } });
       expect(meetupService.fetchMeetupById).toHaveBeenCalledWith(meetupId);
-      await flushPromises();
     });
 
     it('PageMeetup должен выводить только текст "Загрузка..." во время загрузки данных', async () => {
-      jest.spyOn(meetupService, 'fetchMeetupById').mockResolvedValue(meetups[0]);
+      jest.spyOn(meetupService, 'fetchMeetupById').mockReturnValue(new Promise(() => {}));
       const wrapper = mount(PageMeetupTest, {
         props: { meetupId: meetups[0].id },
         global: { stubs: ['MeetupView'] },
       });
-      await wrapper.vm.$nextTick();
+      await nextTick();
       expect(wrapper.text()).toBe('Загрузка...');
       expect(wrapper.findComponent({ name: 'MeetupView' }).exists()).toBeFalsy();
-      await flushPromises();
     });
 
     it('PageMeetup должен выводить данные митапа полученные через fetchMeetupById с помощью компонента MeetupView', async () => {
@@ -72,7 +70,6 @@ describe('components/PageMeetup', () => {
       expect(meetupService.fetchMeetupById).toHaveBeenLastCalledWith(meetup.id);
       expect(wrapper.text()).toBe('Загрузка...');
       expect(wrapper.findComponent({ name: 'MeetupView' }).exists()).toBeFalsy();
-      await flushPromises();
     });
 
     it('PageMeetup должен выводить новые данные с MeetupView, полученные через fetchMeetupById, при обновлении параметра meetupId', async () => {
